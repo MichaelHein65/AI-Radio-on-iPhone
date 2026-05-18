@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var player = AudioPlayerViewModel()
 
     var body: some View {
@@ -20,6 +21,11 @@ struct ContentView: View {
         }
         .ignoresSafeArea(.container, edges: .all)
         .preferredColorScheme(.dark)
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .inactive || phase == .background {
+                player.persistCurrentState()
+            }
+        }
     }
 }
 
@@ -40,7 +46,7 @@ private struct PortraitPlayerLayout: View {
         let topPadding = max(safe.top + (isCompact ? 24 : 28), 82)
 
         VStack(spacing: isCompact ? 10 : 14) {
-            HeaderView(showCount: player.shows.count, compact: isCompact)
+            HeaderView(showCount: player.shows.count, isPlaying: player.isPlaying, compact: isCompact)
 
             CarouselView(
                 shows: player.shows,
@@ -89,7 +95,7 @@ private struct LandscapePlayerLayout: View {
             .frame(width: geometry.size.width * 0.52, height: contentHeight)
 
             VStack(spacing: 12) {
-                HeaderView(showCount: player.shows.count, compact: true)
+                HeaderView(showCount: player.shows.count, isPlaying: player.isPlaying, compact: true)
 
                 NowPlayingView(player: player, density: .landscape)
 
@@ -108,6 +114,7 @@ private struct LandscapePlayerLayout: View {
 
 private struct HeaderView: View {
     let showCount: Int
+    let isPlaying: Bool
     var compact = false
 
     var body: some View {
@@ -126,17 +133,53 @@ private struct HeaderView: View {
 
             Spacer()
 
-            Image(systemName: "dot.radiowaves.left.and.right")
-                .font(.system(size: compact ? 23 : 28, weight: .bold))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [.pink, .orange, .cyan],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .shadow(color: .pink.opacity(0.55), radius: 16, x: 0, y: 0)
+            OnAirIcon(isPlaying: isPlaying, compact: compact)
         }
+    }
+}
+
+private struct OnAirIcon: View {
+    let isPlaying: Bool
+    let compact: Bool
+
+    @State private var animateGradient = false
+
+    var body: some View {
+        Image(systemName: "dot.radiowaves.left.and.right")
+            .font(.system(size: compact ? 23 : 28, weight: .bold))
+            .foregroundStyle(iconStyle)
+            .shadow(color: glowColor, radius: isPlaying ? 16 : 0, x: 0, y: 0)
+            .animation(.easeInOut(duration: 0.25), value: isPlaying)
+            .onAppear {
+                animateGradient = isPlaying
+            }
+            .onChange(of: isPlaying) { _, newValue in
+                animateGradient = newValue
+            }
+            .onChange(of: animateGradient) { _, newValue in
+                guard isPlaying, newValue else { return }
+                withAnimation(.linear(duration: 3.4).repeatForever(autoreverses: false)) {
+                    animateGradient.toggle()
+                }
+            }
+    }
+
+    private var iconStyle: AnyShapeStyle {
+        if isPlaying {
+            AnyShapeStyle(
+                LinearGradient(
+                    colors: [.pink, .orange, .cyan, .pink],
+                    startPoint: animateGradient ? .topLeading : .bottomTrailing,
+                    endPoint: animateGradient ? .bottomTrailing : .topLeading
+                )
+            )
+        } else {
+            AnyShapeStyle(Color.white.opacity(0.48))
+        }
+    }
+
+    private var glowColor: Color {
+        isPlaying ? .pink.opacity(0.55) : .clear
     }
 }
 

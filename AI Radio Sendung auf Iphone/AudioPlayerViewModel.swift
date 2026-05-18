@@ -27,6 +27,8 @@ final class AudioPlayerViewModel: NSObject, ObservableObject {
     private var currentTrackIndex = 0
     private let fileManager = FileManager.default
     private var nowPlayingArtworkCache: [String: MPMediaItemArtwork] = [:]
+    private static let selectedShowIDKey = "selectedShowID"
+    private static let selectedShowIndexKey = "selectedShowIndex"
 
     var selectedShow: ShowItem {
         shows[wrapped(selectedIndex, count: shows.count)]
@@ -34,7 +36,7 @@ final class AudioPlayerViewModel: NSObject, ObservableObject {
 
     override init() {
         self.shows = ShowItem.examples
-        self.selectedIndex = 0
+        self.selectedIndex = Self.restoredSelectedIndex(in: ShowItem.examples)
         super.init()
         configureAudioSession()
         configureRemoteCommands()
@@ -43,7 +45,7 @@ final class AudioPlayerViewModel: NSObject, ObservableObject {
 
     init(shows: [ShowItem]) {
         self.shows = shows
-        self.selectedIndex = 0
+        self.selectedIndex = Self.restoredSelectedIndex(in: shows)
         super.init()
         configureAudioSession()
         configureRemoteCommands()
@@ -63,6 +65,7 @@ final class AudioPlayerViewModel: NSObject, ObservableObject {
         }
 
         selectedIndex = nextIndex
+        persistSelectedShow()
         loadSelectedShow(autoplay: shouldAutoplay)
     }
 
@@ -167,6 +170,27 @@ final class AudioPlayerViewModel: NSObject, ObservableObject {
         }
 
         return String(format: "%d:%02d", minutes, remainingSeconds)
+    }
+
+    func persistCurrentState() {
+        persistSelectedShow()
+    }
+
+    private static func restoredSelectedIndex(in shows: [ShowItem]) -> Int {
+        if let savedID = UserDefaults.standard.string(forKey: selectedShowIDKey),
+           let savedIndex = shows.firstIndex(where: { $0.id == savedID }) {
+            return savedIndex
+        }
+
+        let savedIndex = UserDefaults.standard.integer(forKey: selectedShowIndexKey)
+        guard shows.indices.contains(savedIndex) else { return 0 }
+        return savedIndex
+    }
+
+    private func persistSelectedShow() {
+        UserDefaults.standard.set(selectedShow.id, forKey: Self.selectedShowIDKey)
+        UserDefaults.standard.set(selectedIndex, forKey: Self.selectedShowIndexKey)
+        UserDefaults.standard.synchronize()
     }
 
     private func configureAudioSession() {

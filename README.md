@@ -13,10 +13,12 @@ Die App ist als visueller Radio-/Show-Player gebaut: oben ein endloses Cover-Car
 - Play/Pause, Stop, 15 Sekunden zurueck, 30 Sekunden vor
 - Next/Before springen innerhalb der aktuellen Show zum naechsten/vorigen Track
 - Wechsel der Show ueber die Cover-Bilder
+- Zuletzt ausgewaehlte Show wird beim Neustart wieder vorne im Carousel angezeigt
 - Live-Fortschritt mit Scrubbing
 - Automatischer Wechsel zum naechsten Track innerhalb einer Show
 - Background-Audio im Ruhemodus
 - Now-Playing-Daten mit Cover fuer Sperrbildschirm, Control Center und StandBy/Laden
+- On-Air-Symbol: einfarbig im Stopp/Pause-Zustand, langsam animierter Farbverlauf waehrend der Wiedergabe
 - App-Icon im Asset Catalog
 
 ## Lokale Medienstruktur
@@ -118,3 +120,12 @@ Fuer Installation und Test auf einem angeschlossenen iPhone kann statt `generic/
 4. Einen neuen Eintrag in `ShowItem.examples` anlegen.
 
 Die Player-Buttons `Next` und `Before` springen absichtlich zwischen Tracks innerhalb der aktuellen Show. Der Wechsel zwischen Shows erfolgt ueber das Carousel.
+
+## UI-Verhalten
+
+Die App speichert die zuletzt ausgewaehlte Show lokal mit `UserDefaults`. Beim naechsten Start wird diese Show wieder als zentrale Carousel-Karte geladen. Gespeichert wird die stabile `ShowItem.id`; der Index dient nur als Fallback.
+
+Das On-Air-Symbol rechts im Header ist an den Wiedergabestatus gekoppelt:
+
+- Wiedergabe aktiv: langsamer wandernder Farbverlauf mit dezentem Glow
+- Pause/Stopp: einfarbig gedimmt
