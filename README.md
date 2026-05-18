@@ -1,4 +1,4 @@
-# AI Radio on iPhone
+# AI Radio (ai-radio.cc) on iPhone
 
 Native SwiftUI-App zum lokalen Abspielen der AI-Radio-Sendungen auf dem iPhone.
 
