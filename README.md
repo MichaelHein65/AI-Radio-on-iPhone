@@ -4,7 +4,7 @@ Native SwiftUI-App zum lokalen Abspielen der AI-Radio-Sendungen auf dem iPhone.
 
 Die App ist als visueller Radio-/Show-Player gebaut: oben ein endloses Cover-Carousel, darunter Now-Playing-Anzeige, Scrubbing und grosse farbige Player-Controls. Die Audiodateien werden lokal aus dem App-Dokumentenordner gelesen. Eine Internetverbindung ist fuer die Wiedergabe nicht erforderlich.
 
-![AI Radio App Screenshot](docs/app-screenshot.png)
+<img src="docs/app-screenshot.png" alt="AI Radio App Screenshot" width="33%">
 
 ## Aktueller Funktionsumfang
 
